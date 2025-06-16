@@ -1,5 +1,4 @@
-import { redis } from "./redis"
-
+import { cacheService } from "./redis"
 export interface RealTimeStats {
   activeUsers: number
   lettersGenerated: number
@@ -49,12 +48,12 @@ export class RealTimeAnalytics {
       const realStats = await this.getRealStats()
       const systemMetrics = await this.getSystemMetrics()
 
-      // Stocker dans Redis avec TTL de 30 secondes
-      await redis.setex("realtime:stats", 30, JSON.stringify(realStats))
-      await redis.setex("realtime:system", 30, JSON.stringify(systemMetrics))
+      // Stocker dans cacheService avec TTL de 30 secondes
+      await cacheService.setex("realtime:stats", 30, JSON.stringify(realStats))
+      await cacheService.setex("realtime:system", 30, JSON.stringify(systemMetrics))
 
       // Publier pour les WebSockets (si implémenté)
-      await redis.publish(
+      await cacheService.publish(
         "analytics:update",
         JSON.stringify({
           stats: realStats,
@@ -119,7 +118,7 @@ export class RealTimeAnalytics {
 
   async getCurrentStats(): Promise<RealTimeStats> {
     try {
-      const cached = await redis.get("realtime:stats")
+      const cached = await cacheService.get("realtime:stats")
       if (cached) {
         return JSON.parse(cached)
       }
