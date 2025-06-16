@@ -49,8 +49,8 @@ export class RealTimeAnalytics {
       const systemMetrics = await this.getSystemMetrics()
 
       // Stocker dans cacheService avec TTL de 30 secondes
-      await cacheService.setex("realtime:stats", 30, JSON.stringify(realStats))
-      await cacheService.setex("realtime:system", 30, JSON.stringify(systemMetrics))
+      await cacheService.set("realtime:stats", realStats, 30)
+      await cacheService.set("realtime:system", systemMetrics, 30)
 
       // Publier pour les WebSockets (si implémenté)
       await cacheService.publish(
@@ -118,7 +118,7 @@ export class RealTimeAnalytics {
 
   async getCurrentStats(): Promise<RealTimeStats> {
     try {
-      const cached = await cacheService.get("realtime:stats")
+      const cached = await cacheService.get("realtime:system")
       if (cached) {
         return JSON.parse(cached)
       }
